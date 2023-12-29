@@ -15,8 +15,9 @@ func main() {
 	fmt.Println("Size of langList is: ", len(langList))
 	fmt.Println("langList 2nd index value: ", langList[2])
 
-	fruitList := []string{"Apple", "Orange", "Banana"}
+	fruitList := [3]string{"Apple", "Orange", "Banana"}
 
 	fmt.Println("Fruit list is: ", fruitList)
 	fmt.Println("Size of fruitList is: ", len(fruitList))
+	fmt.Printf("FruitList type is  %T", fruitList)
 }
