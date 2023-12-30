@@ -34,4 +34,16 @@ func main() {
 	fmt.Println("Is scores are sorted: ", sort.IntsAreSorted(scores))
 
 	// How to remove a value from Slice based on index
+
+	languages := []string{"Java", "Go", "Pyhon"}
+
+	languages = append(languages, "C++", "Javascript")
+
+	fmt.Println("Values of languages: ", languages)
+
+	var index = 3
+	languages = append(languages[:index], languages[index+1:]...)
+
+	fmt.Println("Values of languages: ", languages)
+
 }
