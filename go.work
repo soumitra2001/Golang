@@ -1,3 +1,6 @@
 go 1.21.5
 
-use ./06mytime
+use (
+	./06mytime
+	./23mymodules
+)
