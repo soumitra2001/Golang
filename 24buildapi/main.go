@@ -26,6 +26,7 @@ func main() {
 	r.HandleFunc("/course/{id}", updateOneCourse).Methods("PUT")
 	r.HandleFunc("/course/{id}", deleteOneCourse).Methods("DELETE")
 	r.HandleFunc("/courses", deleteAllCourse).Methods("DELETE")
+	r.HandleFunc("/course/price/{id}", updateCoursePrice).Methods("PUT")
 
 	log.Fatal(http.ListenAndServe(":4000", r))
 }
@@ -167,6 +168,7 @@ func deleteOneCourse(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteAllCourse(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Delete all course")
 	var msg string
 	json.NewDecoder(r.Body).Decode(&msg)
 
@@ -177,6 +179,29 @@ func deleteAllCourse(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode("Only authenticate user can delete all courses")
+	return
+}
+
+func updateCoursePrice(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Update course price")
+	w.Header().Set("Content-Type", "application/json")
+
+	params := mux.Vars(r)
+
+	for index, course := range courses {
+		if course.CourseId == params["id"] {
+			var price int
+			json.NewDecoder(r.Body).Decode(&price)
+
+			course.CoursePrice = price
+			courses = append(courses[:index], courses[index+1:]...)
+			courses = append(courses, course)
+			json.NewEncoder(w).Encode("Course price updated")
+			return
+		}
+	}
+
+	json.NewEncoder(w).Encode("Please provide a valid id to update")
 	return
 }
 
