@@ -25,6 +25,7 @@ func main() {
 	r.HandleFunc("/course", createOneCourse).Methods("POST")
 	r.HandleFunc("/course/{id}", updateOneCourse).Methods("PUT")
 	r.HandleFunc("/course/{id}", deleteOneCourse).Methods("DELETE")
+	r.HandleFunc("/courses", deleteAllCourse).Methods("DELETE")
 
 	log.Fatal(http.ListenAndServe(":4000", r))
 }
@@ -162,6 +163,20 @@ func deleteOneCourse(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode("Invalid course id")
+	return
+}
+
+func deleteAllCourse(w http.ResponseWriter, r *http.Request) {
+	var msg string
+	json.NewDecoder(r.Body).Decode(&msg)
+
+	if msg == "supriya" {
+		courses = []Course{}
+		json.NewEncoder(w).Encode(courses)
+		return
+	}
+
+	json.NewEncoder(w).Encode("Only authenticate user can delete all courses")
 	return
 }
 
