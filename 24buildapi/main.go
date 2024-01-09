@@ -28,7 +28,7 @@ func main() {
 	r.HandleFunc("/courses", deleteAllCourse).Methods("DELETE")
 	r.HandleFunc("/course/price/{id}", updateCoursePrice).Methods("PUT")
 
-	log.Fatal(http.ListenAndServe(":4000", r))
+	defer log.Fatal(http.ListenAndServe(":4000", r))
 }
 
 type Course struct {
