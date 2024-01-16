@@ -8,4 +8,5 @@ use (
 	./26connect_psql
 	./27postgresapi
 	./29concurrency&channels
+	./31httpapis
 )

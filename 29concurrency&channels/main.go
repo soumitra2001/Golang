@@ -1,3 +1,4 @@
+/*
 package main
 
 import (
@@ -99,4 +100,29 @@ func main() {
 			date: time.Date(2022, 0, 0, 0, 0, 0, 0, time.UTC),
 		},
 	})
+}
+*/
+
+package main
+
+import (
+	"fmt"
+	"math/rand"
+	"time"
+)
+
+func main() {
+	str := make(chan string)
+	go boring("boring!", str)
+	for i := 0; i < 5; i++ {
+		fmt.Printf("You say: %q\n", <-str) // Receive expression is just a value.
+	}
+	fmt.Println("You're boring; I'm leaving. ")
+}
+
+func boring(msg string, c chan string) {
+	for i := 0; ; i++ {
+		c <- fmt.Sprintf("%s %d", msg, i) // Expression to be sent can be any suitable value.
+		time.Sleep(time.Duration(rand.Intn(100)) * time.Millisecond)
+	}
 }
