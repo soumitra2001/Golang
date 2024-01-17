@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 
 	_ "github.com/lib/pq"
 )
@@ -106,6 +107,8 @@ func addStudent(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
+	fmt.Println("student added!")
+
 	json.NewEncoder(w).Encode("Student successfully added with the name of " + student.Name)
 
 }
@@ -136,17 +139,30 @@ func getAllStudent(w http.ResponseWriter, r *http.Request) {
 	db := openConnection()
 
 	defer db.Close()
+	w.Header().Set("Content-Type", "application/json")
 
-	queryStr := `Select * from student`
-
-	rows, err := db.Query(queryStr)
+	rows, err := db.Query("select * from student")
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		log.Fatal(err)
 	}
 
-	json.NewEncoder(w).Encode(rows)
+	var students []Student
+
+	for rows.Next() {
+		var student Student
+		rows.Scan(&student.Email, &student.Name, &student.Email, &student.Phone)
+
+		fmt.Println(student)
+		students = append(students, student)
+	}
+
+	resByte, _ := json.MarshalIndent(students, "", "\t")
+
+	w.Write(resByte)
+
+	fmt.Println("get all student")
 
 }
 
@@ -154,16 +170,31 @@ func getStudent(w http.ResponseWriter, r *http.Request) {
 	db := openConnection()
 	defer db.Close()
 
-	params := url.Values{}
+	w.Header().Set("Content-Type", "application/json")
 
-	row, err := db.Query(`select * from student where student_id=$1`, params["id"])
+	urlPath := r.URL.Path
+
+	fmt.Println(urlPath)
+
+	pathVals := strings.Split(urlPath, "/")
+	id := pathVals[len(pathVals)-1]
+
+	fmt.Println(id)
+
+	myId, _ := strconv.Atoi(id)
+
+	row, err := db.Query(`select * from student where student_id=$1`, myId)
+
+	var student Student
+	row.Columns()
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		log.Fatal(err)
 	}
 
-	json.NewEncoder(w).Encode(row)
+	fmt.Println("get student")
+	json.NewEncoder(w).Encode(&student)
 }
 
 // func getAllMentor(w http.ResponseWriter, r *http.Request) {
@@ -214,15 +245,20 @@ func updateStudentEmail(w http.ResponseWriter, r *http.Request) {
 	id := params.Get("id")
 	params2, _ := strconv.Atoi(id)
 
-	email := "hari@theflurncom"
+	fmt.Println(params2)
+
+	var student Student
+	json.NewDecoder(r.Body).Decode(&student)
 	queryStr := `update  student set email=$1 where student_id=$2`
 
-	_, err := db.Exec(queryStr, email, params2)
+	_, err := db.Exec(queryStr, student.Email, params2)
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		log.Fatal(err)
 	}
+
+	fmt.Println("student email updated")
 
 	json.NewEncoder(w).Encode("Student successfully updated")
 
@@ -233,15 +269,21 @@ func deleteStudent(w http.ResponseWriter, r *http.Request) {
 
 	defer db.Close()
 
-	params := url.Values{}
+	w.Header().Set("Content-Type", "application-json")
+
+	params := r.URL.Query().Get("id")
+
+	id, _ := strconv.Atoi(params)
 
 	queryStr := `delete from student where student_id=$1`
 
-	res, err := db.Exec(queryStr, params["id"])
+	res, err := db.Exec(queryStr, id)
 
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	fmt.Println("delete student")
 
 	json.NewEncoder(w).Encode(res)
 }
@@ -269,10 +311,11 @@ func main() {
 	// mentorTable()
 	studentTable()
 
-	// http.HandleFunc("/student", student_dispatcher)
-	http.HandleFunc("/student", student_dispatcher) //get
-	// http.HandleFunc("/student/:id", student_dispatcher) //put
-	http.HandleFunc("/student-email/:id", student_dispatcher)
+	http.HandleFunc("/student", student_dispatcher)        // post
+	http.HandleFunc("/students", student_dispatcher)       // get
+	http.HandleFunc("/student", student_dispatcher)        // get
+	http.HandleFunc("/student-email/", student_dispatcher) // put
+	http.HandleFunc("/student-one", student_dispatcher)    // delete
 	// http.HandleFunc("/mentor", mentor_dispatcher)
 	// http.HandleFunc("/mentors", mentor_dispatcher)
 	// http.HandleFunc("/mentor/{id}", mentor_dispatcher)
@@ -281,10 +324,17 @@ func main() {
 }
 
 func student_dispatcher(w http.ResponseWriter, r *http.Request) {
+	urlPath := r.URL.Path
+	fmt.Println(urlPath)
 	switch method := r.Method; method {
 	case "GET":
-		getAllStudent(w, r)
-		getStudent(w, r)
+		path := strings.Split(urlPath, "/")[1]
+		fmt.Println(path)
+		if path == "students" {
+			getAllStudent(w, r)
+		} else {
+			getStudent(w, r)
+		}
 	case "POST":
 		addStudent(w, r)
 	case "PUT":
