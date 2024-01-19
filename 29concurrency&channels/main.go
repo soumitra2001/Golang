@@ -19,7 +19,6 @@ func filterOldEmails(emails []email) {
 	fmt.Println("email 3 is old:", isOld)
 }
 
-// TEST SUITE -- Don't touch below this line
 
 func sendIsOld(isOldChan chan<- bool, emails []email) {
 	go func() {
@@ -147,8 +146,6 @@ func countReports(numSentCh chan int) int {
 
 	return count
 }
-
-// don't touch below this line
 
 func test(numBatches int) {
 	numSentCh := make(chan int)
